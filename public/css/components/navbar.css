@@ -1,0 +1,82 @@
+/* ==========================================
+   NAVBAR COMPONENT STYLES
+   ========================================== */
+.navbar {
+  /* Biar navbar melayang dan melayang di paling atas saat di-scroll */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--color-white);
+  box-shadow: 0px 1px 10px #002e7267;
+  padding: 14px 0;
+}
+
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.nav-link {
+  color: #64748b;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #002D72;
+  font-weight: 600;
+}
+
+/* Garis bawah penanda menu aktif */
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #002D72;
+  border-radius: 2px;
+}
+
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Penyesuaian ikon gambar agar presisi dan sejajar */
+.nav-icon-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-icons a:hover .nav-icon-img {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
