@@ -1,27 +1,23 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\StockController;
-use App\Http\Controllers\Admin\PaymentVerificationController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReturnController;
-use App\Http\Controllers\Admin\SalesReportController;
-use App\Http\Controllers\Admin\AccountSettingController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
 |--------------------------------------------------------------------------
-| Taruh file ini sebagai routes/admin.php, lalu di routes/web.php tambahkan:
-|
-|   require __DIR__.'/admin.php';
-|
-| Atau salin blok Route::group di bawah ini langsung ke routes/web.php.
-| Semua route diberi middleware 'auth' + 'can:admin' (sesuaikan dengan
-| middleware/role yang sudah kamu pakai, misal 'role:admin' kalau pakai
-| Spatie Permission).
+| Di-include dari routes/web.php lewat: require __DIR__.'/admin.php';
+| Semua route diberi middleware 'auth' + 'can:admin', prefix 'admin',
+| dan name prefix 'admin.' (mis. route('admin.orders.index')).
 */
 
 Route::middleware(['auth', 'can:admin'])
@@ -29,43 +25,34 @@ Route::middleware(['auth', 'can:admin'])
     ->name('admin.')
     ->group(function () {
 
-        // Dashboard
-        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard'); // /admin
 
-        // Toggle status buka/tutup toko (dipanggil dari sidebar)
-        Route::post('/status/toggle', [AdminDashboardController::class, 'toggleStatus'])->name('status.toggle');
+        // User dibuat lewat pendaftaran pelanggan, jadi admin hanya melihat, mengubah role, dan menghapus.
+        Route::resource('users', UserController::class)->only(['index', 'show', 'destroy']);
+        Route::patch('users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
 
-        // Manajemen Produk
         Route::resource('products', ProductController::class);
 
-        // Manajemen Stok
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');
-        Route::get('stock/{product}/edit', [StockController::class, 'edit'])->name('stock.edit');
-        Route::put('stock/{product}', [StockController::class, 'update'])->name('stock.update');
+        Route::post('stock/{item}/adjust', [StockController::class, 'adjust'])->name('stock.adjust');
 
-        // Verifikasi Pembayaran
-        Route::get('payments', [PaymentVerificationController::class, 'index'])->name('payments.index');
-        Route::get('payments/{order}', [PaymentVerificationController::class, 'show'])->name('payments.show');
-        Route::post('payments/{order}/confirm', [PaymentVerificationController::class, 'confirm'])->name('payments.confirm');
-        Route::post('payments/{order}/reject', [PaymentVerificationController::class, 'reject'])->name('payments.reject');
-
-        // Manajemen Pesanan
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-        Route::post('orders/{order}/process', [OrderController::class, 'process'])->name('orders.process');
-        Route::get('orders/{order}/track', [OrderController::class, 'track'])->name('orders.track');
+        Route::post('orders/{order}/ship', [OrderController::class, 'ship'])->name('orders.ship');
+        Route::post('orders/{order}/accept', [OrderController::class, 'accept'])->name('orders.accept');
+        Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+        Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 
-        // Manajemen Retur
         Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
-        Route::get('returns/{return}', [ReturnController::class, 'show'])->name('returns.show');
-        Route::post('returns/{return}/approve', [ReturnController::class, 'approve'])->name('returns.approve');
-        Route::post('returns/{return}/reject', [ReturnController::class, 'reject'])->name('returns.reject');
+        Route::post('returns/{retur}/{action}', [ReturnController::class, 'act'])
+            ->whereIn('action', ['reject', 'offer', 'approve', 'arrive', 'complete'])->name('returns.act');
 
-        // Rekap Penjualan
-        Route::get('sales', [SalesReportController::class, 'index'])->name('sales.index');
-        Route::get('sales/export', [SalesReportController::class, 'export'])->name('sales.export');
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
-        // Pengaturan Akun
-        Route::get('account', [AccountSettingController::class, 'index'])->name('account.index');
-        Route::put('account', [AccountSettingController::class, 'update'])->name('account.update');
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::post('reviews/{review}/reply', [ReviewController::class, 'reply'])->name('reviews.reply');
+        Route::post('reviews/{review}/visibility', [ReviewController::class, 'toggleVisibility'])->name('reviews.visibility');
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     });

@@ -16,7 +16,7 @@
 
   <div class="container">
     <div class="left-side">
-      <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop" alt="Store Front">
+      <img src="{{ asset('images/bg.png') }}" alt="Store Front">
     </div>
 
     <div class="right-side">

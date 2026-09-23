@@ -133,7 +133,7 @@
                 <div>
                     <i class="fa-solid fa-building-columns"></i>
 
-                    Transfer Manual BCA
+                    Menunggu Pembayaran (Midtrans)
                 </div>
 
                 <span class="countdown">
@@ -462,7 +462,7 @@
                     </button>
 
                     <a
-    href="{{ route('retur.index') }}"
+    href="{{ route('retur.index', ['order' => 'ORD-95110']) }}"
     class="btn btn-outline"
 >
     <i class="fa-solid fa-rotate-left"></i>

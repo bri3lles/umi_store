@@ -1,0 +1,43 @@
+/* ===== Rekap Penjualan ===== */
+.range-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 24px; }
+.range-bar button { height: 40px; padding: 0 16px; border: 1px solid var(--admin-border); border-radius: 10px; background: #fff; color: var(--admin-text); font-size: 13px; font-weight: 500; cursor: pointer; }
+.range-bar button:hover { background: #F3F4FC; }
+.range-bar button.is-active { background: var(--admin-primary); border-color: var(--admin-primary); color: #fff; font-weight: 600; }
+.range-bar__custom { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; color: #1D4ED8 !important; background: transparent !important; border-color: transparent !important; }
+.range-bar__custom:disabled { cursor: not-allowed; opacity: .7; }
+
+.report-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.chart-card__desc { margin: 2px 0 0; font-size: 12px; color: var(--admin-muted); }
+.legend { display: flex; gap: 16px; font-size: 12px; color: var(--admin-muted); }
+.legend__dot { display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; }
+.legend__dot--omzet { background: #1D4ED8; }
+.legend__dot--laba { background: #12B76A; }
+.chart--dual .chart__plot { height: 260px; }
+
+/* Kategori terlaris */
+.cat-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cat-card__head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.cat-card__hint { margin: 4px 0 20px; font-size: 12px; color: var(--admin-muted); }
+.cat-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.cat-row__label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.cat-row__value { margin-top: 2px; font-size: 13px; font-weight: 600; }
+.cat-row__value small { font-weight: 400; color: var(--admin-muted); }
+.bar { height: 6px; margin-top: 6px; overflow: hidden; border-radius: 999px; background: #EEF0F4; }
+.bar span { display: block; height: 100%; border-radius: 999px; }
+.fav-box { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 14px 16px; border-radius: 12px; background: #F1F2FC; }
+.fav-box__icon { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: #FEF0C7; color: #B54708; }
+.fav-box b { display: block; font-size: 13px; font-weight: 600; }
+.fav-box small { display: block; font-size: 12px; color: var(--admin-muted); }
+.fav-box__count { margin-left: auto; padding: 4px 10px; border-radius: 999px; background: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* Tabel rekap */
+.laba-cell { color: var(--admin-success); font-weight: 700; white-space: nowrap; }
+.totals-row td { padding-block: 18px; background: #F7F8FC; border-top: 2px solid var(--admin-border); border-bottom: 0; }
+
+@media (max-width: 1199px) {
+    .report-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 479px) {
+    .fav-box { flex-wrap: wrap; }
+    .fav-box__count { margin-left: 0; }
+}

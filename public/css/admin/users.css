@@ -1,0 +1,20 @@
+.user-cell { display: flex; align-items: center; gap: 12px; }
+.user-cell__name { font-weight: 600; text-decoration: none; }
+.user-cell__name:hover { color: var(--admin-primary); }
+
+.profile { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.profile__card { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.profile__name { margin: 8px 0 0; font-size: 18px; font-weight: 600; }
+.profile__email { margin: 0; color: var(--admin-muted); word-break: break-all; }
+.profile__badges { display: flex; gap: 8px; margin-top: 8px; }
+.info-title { margin: 0 0 20px; font-size: 16px; font-weight: 600; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; margin: 0; }
+.info-grid dt { font-size: 12px; color: var(--admin-muted); }
+.info-grid dd { margin: 2px 0 0; font-weight: 500; }
+
+@media (max-width: 899px) {
+    .profile { grid-template-columns: 1fr; }
+}
+@media (max-width: 479px) {
+    .info-grid { grid-template-columns: 1fr; }
+}

@@ -1,173 +1,106 @@
-// KLIK TOMBOL WARNA DI KANAN -> UBAH GAMBAR BESAR & THUMBNAIL KIRI
-function selectColor(element) {
-    const colorId = element.getAttribute('data-color-id');
-    const colorName = element.getAttribute('data-color-name');
+(function () {
+    'use strict';
 
-    // 1. Ubah teks nama warna
-    document.getElementById('colorName').textContent = colorName;
+    const CART_KEY = 'umiCart';
+    const get = id => document.getElementById(id);
+    const money = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
 
-    // 2. Set status aktif tombol warna
-    document.querySelectorAll('.chip-btn[data-color-id]').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    element.classList.add('active');
-
-    // 3. Cari thumbnail kiri yang punya data-color-id sama
-    const targetThumb = document.querySelector(`.thumb-card[data-color-id="${colorId}"]`);
-
-    if (targetThumb) {
-        // Ganti gambar utama dengan sumber gambar dari thumbnail yang cocok
-        document.getElementById('mainImage').src = targetThumb.src;
-
-        // Set status aktif pada thumbnail kiri
-        document.querySelectorAll('.thumb-card').forEach(thumb => {
-            thumb.classList.remove('active');
-        });
-        targetThumb.classList.add('active');
+    function toast(message, type = 'success') {
+        let el = get('umiDetailToast');
+        if (!el) { el = document.createElement('div'); el.id='umiDetailToast'; el.style.cssText='position:fixed;right:24px;bottom:24px;z-index:9999;background:#002D72;color:#fff;padding:12px 16px;border-radius:10px;font:600 14px Inter,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.15)'; document.body.appendChild(el); }
+        el.textContent=message; el.style.background=type==='error'?'#b42318':'#002D72'; clearTimeout(window.__detailToast); window.__detailToast=setTimeout(()=>el.remove(),2400);
     }
-}
 
-// KLIK THUMBNAIL KECIL DI KIRI -> UBAH GAMBAR BESAR & TOMBOL WARNA KANAN
-function switchImage(element) {
-    const colorId = element.getAttribute('data-color-id');
-    const colorName = element.getAttribute('data-color-name');
+    function selectedColor() {
+        const active = document.querySelector('.color-chip-group .chip-btn.active, .variant-box:first-of-type .chip-btn.active');
+        return active?.dataset.colorName || active?.dataset.color || active?.innerText.trim() || '';
+    }
 
-    // 1. Ubah Gambar Utama
-    document.getElementById('mainImage').src = element.src;
+    function selectedSize() {
+        const active = document.querySelector('.size-chip-group .chip-btn.active');
+        return active?.dataset.size || active?.innerText.trim() || '';
+    }
 
-    // 2. Set status aktif thumbnail yang diklik
-    document.querySelectorAll('.thumb-card').forEach(thumb => {
-        thumb.classList.remove('active');
-    });
-    element.classList.add('active');
+    function selectColor(element) {
+        if (element.disabled || element.classList.contains('disabled')) return;
+        document.querySelectorAll('.chip-btn[data-color-id], .color-chip-group .chip-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+        const label = get('colorName') || get('selectedColorLabel');
+        if (label) label.textContent = element.dataset.colorName || element.dataset.color || element.innerText.trim();
+        const target = document.querySelector(`.thumb-card[data-color-id="${element.dataset.colorId}"]`);
+        const main = get('mainImage');
+        if (target && main) main.src = target.src;
+        document.querySelectorAll('.thumb-card').forEach(thumb => thumb.classList.remove('active'));
+        target?.classList.add('active');
+    }
 
-    // 3. Cari tombol warna kanan yang cocok lalu aktifkan
-    if (colorId) {
-        const targetBtn = document.querySelector(`.chip-btn[data-color-id="${colorId}"]`);
-        if (targetBtn) {
-            document.querySelectorAll('.chip-btn[data-color-id]').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            targetBtn.classList.add('active');
-            document.getElementById('colorName').textContent = colorName;
+    function switchImage(element) {
+        const main = get('mainImage');
+        if (main) main.src = element.src;
+        document.querySelectorAll('.thumb-card').forEach(thumb => thumb.classList.remove('active'));
+        element.classList.add('active');
+        if (element.dataset.colorId) {
+            const color = document.querySelector(`.chip-btn[data-color-id="${element.dataset.colorId}"]`);
+            if (color) selectColor(color);
         }
     }
-}
 
-function selectSize(element) {
-    document.querySelectorAll('.variant-box:nth-child(2) .chip-btn').forEach(el => el.classList.remove('active'));
-    element.classList.add('active');
-    document.getElementById('sizeName').textContent = element.textContent.trim();
-}
-
-// Quantity Counter
-function adjustQty(amount) {
-    const input = document.getElementById('quantity');
-    let current = parseInt(input.value) || 1;
-    if (current + amount >= 1) {
-        input.value = current + amount;
+    function selectSize(element) {
+        if (element.disabled || element.classList.contains('disabled')) return;
+        document.querySelectorAll('.size-chip-group .chip-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+        const label = get('selectedSizeLabel');
+        if (label) label.textContent = element.dataset.size || element.innerText.trim();
     }
-}
 
-// Buka/Tutup Size Chart Modal
-function toggleModal(show) {
-    const modal = document.getElementById('sizeModal');
-    if (show) modal.classList.add('is-open');
-    else modal.classList.remove('is-open');
-}
-
-// Expand Semua Ulasan
-function expandReviews() {
-    document.querySelectorAll('.extra-review').forEach(card => card.classList.remove('is-hidden'));
-    document.getElementById('btnExpandReviews').style.display = 'none';
-}
-
-function toggleReadMore() {
-    const wrapper = document.getElementById('descWrapper');
-    const btn = document.getElementById('btnReadMore');
-    const isExpanded = wrapper.classList.contains('expanded');
-
-    if (isExpanded) {
-        wrapper.classList.remove('expanded');
-        btn.classList.remove('active');
-        btn.innerHTML = 'Baca Selengkapnya <i class="fa-solid fa-chevron-down"></i>';
-    } else {
-        wrapper.classList.add('expanded');
-        btn.classList.add('active');
-        btn.innerHTML = 'Sembunyikan <i class="fa-solid fa-chevron-down"></i>';
+    function adjustQty(amount) {
+        const input = get('quantity');
+        if (!input) return;
+        const current = Math.max(1, Number(input.value) || 1);
+        const next = Math.max(1, Math.min(5, current + amount));
+        input.value = next;
     }
-}
 
-function toggleReviews() {
-    const btn = document.getElementById('btnToggleReviews');
-    const hiddenReviews = document.querySelectorAll('.review-post.is-hidden');
-    const label = btn.querySelector('span');
+    function toggleModal(show) { get('sizeModal')?.classList.toggle('is-open', Boolean(show)); }
+    function openSizeModal() { toggleModal(true); }
 
-    if (!btn) return;
+    function toggleReadMore() {
+        const wrapper=get('descWrapper'), btn=get('btnReadMore'); if(!wrapper||!btn)return;
+        const expanded=wrapper.classList.toggle('expanded'); btn.classList.toggle('active',expanded); btn.innerHTML=expanded?'Sembunyikan <i class="fa-solid fa-chevron-up"></i>':'Baca Selengkapnya <i class="fa-solid fa-chevron-down"></i>';
+    }
 
-    // Toggle class active untuk putar panah CSS
-    btn.classList.toggle('active');
-    const isExpanded = btn.classList.contains('active');
+    function toggleReviews() {
+        const btn=get('btnToggleReviews'); if(!btn)return;
+        const expanded=btn.classList.toggle('active');
+        document.querySelectorAll('.review-post.is-hidden').forEach(item=>item.style.display=expanded?'flex':'none');
+        const label=btn.querySelector('span'); if(label)label.textContent=expanded?'Sembunyikan Ulasan':'Lihat Semua Ulasan';
+    }
 
-    // Tampilkan / Sembunyikan ulasan ekstra
-    hiddenReviews.forEach(review => {
-        if (isExpanded) {
-            review.style.display = 'flex';
-        } else {
-            review.style.display = 'none';
-        }
+    function getCart(){try{const x=JSON.parse(localStorage.getItem(CART_KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
+    function saveCart(cart){localStorage.setItem(CART_KEY,JSON.stringify(cart))}
+
+    function addToCart(buyNow=false){
+        const color=selectedColor(), size=selectedSize();
+        if(!color){toast('Pilih warna terlebih dahulu.','error');return}
+        if(!size){toast('Pilih ukuran terlebih dahulu.','error');return}
+        const input=get('quantity'); const qty=Math.max(1,Number(input?.value||1));
+        const name=document.querySelector('.item-title')?.textContent.trim()||'Kaos Polos Cotton Combed';
+        const price=Number((document.querySelector('.price-active')?.textContent||'').replace(/[^0-9]/g,''))||149000;
+        const image=get('mainImage')?.src||'';
+        const id='kaos-polos-cotton-combed';
+        let cart=getCart();
+        const key=`${id}-${size}-${color}`;
+        const existing=cart.find(item=>item.id===key);
+        if(existing) existing.qty=Math.min(5,existing.qty+qty); else cart.push({id:key,productId:id,name,price,qty,size,color,image,stock:5,selected:true});
+        saveCart(cart);
+        toast(buyNow?'Menyiapkan pembelian...':'Produk ditambahkan ke keranjang.');
+        setTimeout(()=>{window.location.href=buyNow?window.umiRoutes.shipping:window.umiRoutes.cart},250);
+    }
+
+    window.selectColor=selectColor; window.switchImage=switchImage; window.selectSize=selectSize; window.adjustQty=adjustQty; window.toggleModal=toggleModal; window.openSizeModal=openSizeModal; window.toggleReadMore=toggleReadMore; window.toggleReviews=toggleReviews;
+
+    document.addEventListener('DOMContentLoaded',()=>{
+        get('btnAddToCart')?.addEventListener('click',()=>addToCart(false));
+        get('btnBuyNow')?.addEventListener('click',()=>addToCart(true));
     });
-
-    // Ubah teks tombol
-    if (label) {
-        label.textContent = isExpanded ? 'Sembunyikan Ulasan' : 'Lihat Semua Ulasan';
-    }
-}
-
-function selectSize(selectedBtn) {
-    // 1. Abaikan jika tombol dalam keadaan disabled (stok habis)
-    if (selectedBtn.classList.contains('disabled') || selectedBtn.disabled) {
-        return;
-    }
-
-    // 2. Ambil semua tombol ukuran di dalam grup
-    const sizeButtons = document.querySelectorAll('.size-chip-group .chip-btn');
-
-    // 3. Hapus class 'active' dari SEMUA tombol ukuran
-    sizeButtons.forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // 4. Tambahkan class 'active' HANYA ke tombol yang diklik
-    selectedBtn.classList.add('active');
-
-    // 5. Update teks label "Ukuran: S" sesuai ukuran yang dipilih
-    const selectedSize = selectedBtn.getAttribute('data-size') || selectedBtn.innerText;
-    const sizeLabel = document.getElementById('selectedSizeLabel');
-    if (sizeLabel) {
-        sizeLabel.textContent = selectedSize;
-    }
-}
-
-function selectColor(selectedBtn) {
-    if (selectedBtn.classList.contains('disabled') || selectedBtn.disabled) return;
-
-    // Ambil semua tombol warna
-    const colorButtons = document.querySelectorAll('.color-chip-group .chip-btn');
-    
-    // Nonaktifkan semua, aktifkan yang diklik
-    colorButtons.forEach(btn => btn.classList.remove('active'));
-    selectedBtn.classList.add('active');
-
-    // Update label warna
-    const selectedColor = selectedBtn.getAttribute('data-color') || selectedBtn.innerText.trim();
-    const colorLabel = document.getElementById('selectedColorLabel');
-    if (colorLabel) {
-        colorLabel.textContent = selectedColor;
-    }
-}
-
-// Tambahkan fungsi ini di bagian script JS Anda
-function openSizeModal() {
-    toggleModal(true);
-}
+})();

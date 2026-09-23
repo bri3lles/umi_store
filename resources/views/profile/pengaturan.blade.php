@@ -5,15 +5,15 @@
 @php
     $profileUser = $user ?? auth()->user();
 
-    $nama = $profileUser->nama ?? 'Siti Rahmawati';
+    $nama = $profileUser->nama ?? 'Reva';
     $email = $profileUser->email ?? 'siti.rahmawati@email.com';
     $telepon = $profileUser->telepon ?? '0812-3456-7890';
-    $username = $profileUser->username ?? 'siti.rahmawati';
+    $username = $profileUser->username ?? 'reva.aulia';
     $tanggalLahir = $profileUser->tanggal_lahir ?? '2005-05-12';
     $jenisKelamin = $profileUser->jenis_kelamin ?? 'Perempuan';
 
     $foto = $profileUser->foto_profil
-        ?? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop';
+        ?? 'https://i.pinimg.com/1200x/6b/ff/7a/6bff7ab751622668e3ef078064de7cfe.jpg';
 @endphp
 
 @push('styles')
@@ -424,7 +424,7 @@
 
                     <div class="address-user">
 
-                        <strong>Siti Rahmawati</strong>
+                        <strong>Reva</strong>
 
                         <span>0812-3456-7890</span>
 

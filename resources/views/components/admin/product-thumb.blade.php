@@ -1,0 +1,2 @@
+@props(['color' => '#94A3B8', 'size' => 56])
+<span {{ $attributes->merge(['class' => 'thumb']) }} style="--tone: {{ $color }}; --s: {{ $size }}px"><x-admin.icon name="shirt" :size="round($size * .42)" /></span>

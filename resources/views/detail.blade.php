@@ -20,7 +20,6 @@
            
            <div class="thumb-grid">
                 <img src="https://i.pinimg.com/1200x/5b/34/52/5b3452044a69aa056e6bb0b1c37e3ec3.jpg" 
-                    id="mainImage"
                     class="thumb-card active" 
                     onclick="switchImage(this)"> 
 
@@ -75,7 +74,7 @@
 
             {{-- VARIAN WARNA --}}
             <div class="variant-box">
-                <div class="variant-label">Warna: <span id="colorName">White</span></div>
+                <div class="variant-label">Warna: <span id="colorName">Pilih warna</span></div>
                 <div class="chip-group">
                     <button type="button" class="chip-btn has-thumb" data-color-id="putih" data-color-name="Putih" onclick="selectColor(this)">
                         <img src="https://i.pinimg.com/1200x/0f/28/f3/0f28f30ca398ad2522b6252ed6694abb.jpg" class="color-thumb" alt="Putih">
@@ -99,7 +98,7 @@
             {{-- Size Selection --}}
             <div class="variant-box">
     <div class="variant-header">
-        <span class="variant-label">Ukuran: <strong id="selectedSizeLabel">S</strong></span>
+        <span class="variant-label">Ukuran: <strong id="selectedSizeLabel">Pilih ukuran</strong></span>
         <button type="button" class="btn-link-modal" onclick="toggleModal(true)">Panduan Ukuran</button>
     </div>
 
@@ -119,8 +118,8 @@
                     <input type="number" id="quantity" value="1" readonly>
                     <button type="button" onclick="adjustQty(1)">+</button>
                 </div>
-                <button type="button" class="btn-outline-action">Masukkan Keranjang</button>
-                <button type="button" class="btn-solid-action">Beli Sekarang</button>
+                <button type="button" class="btn-outline-action" id="btnAddToCart">Masukkan Keranjang</button>
+                <button type="button" class="btn-solid-action" id="btnBuyNow">Beli Sekarang</button>
             </div>
 
         </div>
@@ -420,5 +419,6 @@
 @endsection
 
 @push('scripts')
+    <script>window.umiRoutes={cart:@json(route('keranjang')),shipping:@json(route('diantar'))};</script>
     <script src="{{ asset('js/detail-produk.js') }}"></script>
 @endpush

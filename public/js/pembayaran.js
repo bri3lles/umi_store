@@ -98,3 +98,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnBayarMidtrans = document.getElementById('btnBayarMidtrans');
+
+  if (btnBayarMidtrans) {
+    btnBayarMidtrans.addEventListener('click', () => {
+      // Nominal yang harus dibayar — sesuaikan sumbernya (misal dari total keranjang)
+      const grossAmount = 515245;
+
+      fetch("/midtrans/snap-token", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ gross_amount: grossAmount })
+      })
+        .then(res => res.json())
+        .then(data => {
+          window.snap.pay(data.snap_token, {
+            onSuccess: function (result) {
+              alert('Pembayaran berhasil!');
+            },
+            onPending: function (result) {
+              alert('Menunggu pembayaran...');
+            },
+            onError: function (result) {
+              alert('Pembayaran gagal.');
+            },
+            onClose: function () {
+              console.log('Popup ditutup tanpa menyelesaikan pembayaran');
+            }
+          });
+        })
+        .catch(err => console.error('Gagal ambil snap token:', err));
+    });
+  }
+});

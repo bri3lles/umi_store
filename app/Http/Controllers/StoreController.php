@@ -1,0 +1,11 @@
+<?php
+namespace App\Http\Controllers;
+use App\Models\Product; use Illuminate\Http\Request;
+class StoreController extends Controller {
+ public function home(){ $products=Product::where('active',true)->where('featured',true)->latest()->take(8)->get(); return view('beranda',compact('products')); }
+ public function catalog(Request $r){$q=Product::where('active',true); if($r->filled('q')) $q->where(fn($x)=>$x->where('name','like','%'.$r->q.'%')->orWhere('category','like','%'.$r->q.'%')); if($r->filled('category')&&$r->category!=='all') $q->where('category',$r->category); $q=match($r->sort){'lowest'=>$q->orderBy('price'),'highest'=>$q->orderByDesc('price'),'newest'=>$q->latest(),default=>$q->orderByDesc('featured')->latest()}; $products=$q->paginate(12)->withQueryString(); $categories=Product::where('active',true)->distinct()->orderBy('category')->pluck('category'); return view('katalog',compact('products','categories')); }
+ public function detail(?Product $product=null){$product=$product?:Product::where('active',true)->firstOrFail();abort_unless($product->active,404); $reviews=$product->reviews()->where('visible',true)->with('user')->latest()->get(); return view('detail',compact('product','reviews'));}
+ public function addCart(Request $r, Product $product){$data=$r->validate(['size'=>'nullable|string','color'=>'nullable|string','quantity'=>'required|integer|min:1']); abort_if($data['quantity']>$product->stock,422,'Stok tidak mencukupi.'); $cart=session('cart',[]); $key=$product->id.'|'.($data['size']??'').'|'.($data['color']??''); $cart[$key]=['product_id'=>$product->id,'size'=>$data['size']??null,'color'=>$data['color']??null,'quantity'=>($cart[$key]['quantity']??0)+$data['quantity']]; if($cart[$key]['quantity']>$product->stock) $cart[$key]['quantity']=$product->stock; session(['cart'=>$cart]); return response()->json(['ok'=>true,'count'=>collect($cart)->sum('quantity')]); }
+ public function wishlist(Product $product){abort_unless(auth()->check(),403); $w=\App\Models\Wishlist::firstOrCreate(['user_id'=>auth()->id(),'product_id'=>$product->id]); return back()->with('success',__('common.wishlist_saved'));}
+ public function removeWishlist(Product $product){abort_unless(auth()->check(),403); \App\Models\Wishlist::where(['user_id'=>auth()->id(),'product_id'=>$product->id])->delete(); return back();}
+}

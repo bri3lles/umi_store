@@ -1,0 +1,60 @@
+/* ===== Manajemen Stok ===== */
+.alert--danger { background: var(--admin-danger-soft); color: #B42318; }
+.nowrap { white-space: nowrap; }
+.inline-ico { display: inline-block; vertical-align: -2px; margin-right: 2px; }
+
+.stock-toolbar { justify-content: space-between; }
+.filter-status { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--admin-muted); font-size: 12px; font-weight: 500; }
+.seg-tabs a { display: inline-block; padding: 6px 14px; border-radius: 8px; color: var(--admin-muted); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.seg-tabs a:hover { color: var(--admin-text); }
+.seg-tabs a.is-active { background: #fff; color: var(--admin-text); font-weight: 600; box-shadow: 0 1px 3px rgba(16, 24, 40, .12); }
+.seg-tabs a:focus-visible { outline: 2px solid var(--admin-primary); }
+
+.stock-table { min-width: 1080px; }
+.stock-num { font-size: 18px; font-weight: 600; }
+.stock-num--low { color: #1D4ED8; }
+.stock-num--out { color: #B42318; }
+.ind { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.ind::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ind--ok { background: #D1FADF; color: #05603A; }
+.ind--low { background: #E0E7FF; color: #1D4ED8; }
+.ind--out { background: var(--admin-danger-soft); color: #B42318; }
+
+.quick { display: flex; align-items: center; gap: 8px; }
+.stepper { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 10px; background: #F1F2FC; }
+.stepper button { width: 34px; height: 34px; border: 0; border-radius: 8px; display: grid; place-items: center; background: #fff; color: var(--admin-text); cursor: pointer; box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
+.stepper button:hover { background: #E0E7FF; color: var(--admin-primary); }
+.stepper button:focus-visible, .stepper input:focus-visible { outline: 2px solid var(--admin-primary); }
+.stepper input { width: 52px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--admin-text); font-size: 15px; font-weight: 600; text-align: center; -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; }
+.quick .btn { min-width: 96px; }
+.quick .btn[data-state='idle'] { background: #EEF0FB; color: var(--admin-primary); cursor: not-allowed; }
+.quick .btn[data-state='dirty'] { background: var(--admin-primary); color: #fff; }
+.quick .btn[data-state='dirty']:hover { background: var(--admin-primary-dark); }
+.quick .btn[data-state='restock'] { background: var(--admin-danger); color: #fff; }
+.quick .btn[data-state='restock']:hover { background: #B42318; }
+.quick .btn [hidden] { display: none; }
+
+.link-btn { padding: 0; border: 0; background: none; color: #1D4ED8; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+
+/* Modal */
+.modal__dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
+.modal__dialog--wide { max-width: 640px; }
+.adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 0; }
+.diff { min-height: 22px; margin: 8px 0 12px; font-size: 13px; font-weight: 600; color: var(--admin-muted); }
+.diff--in { color: var(--admin-success); }
+.diff--out { color: #B42318; }
+.adj-note { margin-top: 12px; }
+.textarea { height: auto; padding: 10px 12px; line-height: 1.5; resize: vertical; }
+.history-wrap { margin-top: 16px; border: 1px solid var(--admin-border); border-radius: 10px; }
+.history-table { min-width: 520px; font-size: 13px; }
+.history-table th { padding: 10px 12px; background: #F1F2FC; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #475467; }
+.history-table td { padding: 10px 12px; }
+.delta--in { color: var(--admin-success); }
+.delta--out { color: #B42318; }
+
+@media (max-width: 639px) {
+    .adj-grid { grid-template-columns: 1fr; }
+    .stock-toolbar .search-field { flex-basis: 100%; }
+}

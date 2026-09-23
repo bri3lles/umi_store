@@ -37,7 +37,7 @@
                     <div class="profile-user-info">
 
                         <h1>
-                            {{ $user->nama ?? 'Siti Rahmawati' }}
+                            {{ $user->nama ?? 'Reva' }}
                         </h1>
 
                         <p>
@@ -49,7 +49,7 @@
 
 
                     {{-- LOGOUT --}}
-                    <form action="#" method="POST">
+                    <form action="{{ route('logout') }}" method="POST">
                         @csrf
 
                         <button

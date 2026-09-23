@@ -1,117 +1,160 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const pills = document.querySelectorAll('.pill-btn');
-  const katalogGrid = document.getElementById('katalogGrid');
-  const cards = Array.from(document.querySelectorAll('#katalogGrid .product-card'));
-  const searchInput = document.getElementById('searchInput');
-  const sortSelect = document.getElementById('sortSelect');
-  const paginationWrapper = document.querySelector('.pagination-wrapper');
+    const grid = document.getElementById('katalogGrid');
+    if (!grid) return;
 
-  let currentCategory = 'all';
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const pagination = document.querySelector('.pagination-wrapper');
+    const pills = document.querySelectorAll('.pill-btn');
+    const wishlistKey = 'umiWishlist';
+    const pageSize = 8;
+    let category = 'all';
+    let page = 1;
+    let cards = Array.from(grid.querySelectorAll('.product-card'));
 
-  // Fungsi Pembantu: Mengambil Angka Harga dari Teks "Rp 479.000"
-  function getProductPrice(card) {
-    const priceText = card.querySelector('.product-price')?.textContent || '0';
-    return parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
-  }
+    const money = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
 
-  // 1. FITUR FILTER, SEARCH & KONTROL PAGINATION (Hanya tampil jika > 8 produk)
-  function updateProductView() {
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const category = card.getAttribute('data-category');
-      const title = card.querySelector('.product-title')?.textContent.toLowerCase() || '';
-      const subtitle = card.querySelector('.product-subtitle')?.textContent.toLowerCase() || '';
-
-      const matchCategory = (currentCategory === 'all' || category === currentCategory);
-      const matchSearch = (title.includes(query) || subtitle.includes(query));
-
-      if (matchCategory && matchSearch) {
-        card.style.display = 'block';
-        visibleCount++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-
-    // Kontrol Pagination: Sembunyikan jika <= 8, munculkan jika > 8
-    if (paginationWrapper) {
-      if (visibleCount <= 8) {
-        paginationWrapper.style.display = 'none';
-      } else {
-        paginationWrapper.style.display = 'flex';
-      }
+    function getPrice(card) {
+        return Number((card.querySelector('.product-price')?.textContent || '').replace(/[^0-9]/g, '')) || 0;
     }
-  }
 
-  // Event Listener Klik Kategori
-  pills.forEach(pill => {
-    pill.addEventListener('click', function () {
-      pills.forEach(btn => btn.classList.remove('active'));
-      this.classList.add('active');
-      currentCategory = this.getAttribute('data-category');
-      updateProductView();
-    });
-  });
+    function getProduct(card) {
+        return {
+            id: card.dataset.productId || slug(card.querySelector('.product-title')?.textContent || 'produk'),
+            name: card.querySelector('.product-title')?.textContent.trim() || 'Produk Umi Store',
+            price: getPrice(card),
+            image: card.querySelector('.product-image')?.src || '',
+            category: card.dataset.category || 'all'
+        };
+    }
 
-  // Event Listener Live Search Input
-  if (searchInput) {
-    searchInput.addEventListener('input', updateProductView);
-  }
+    function slug(value) {
+        return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
 
-  // 2. FITUR SORTING (URUTKAN HARGA & NAMA)
-  if (sortSelect && katalogGrid) {
-    sortSelect.addEventListener('change', function () {
-      const value = this.value;
+    function readWishlist() {
+        try { return JSON.parse(localStorage.getItem(wishlistKey) || '[]'); } catch { return []; }
+    }
 
-      cards.sort((a, b) => {
-        const priceA = getProductPrice(a);
-        const priceB = getProductPrice(b);
+    function writeWishlist(list) { localStorage.setItem(wishlistKey, JSON.stringify(list)); }
 
-        if (value === 'lowest') {
-          return priceA - priceB; // Terendah ke Tertinggi
-        } else if (value === 'highest') {
-          return priceB - priceA; // Tertinggi ke Terendah
-        } else if (value === 'newest') {
-          return 0.5 - Math.random(); // Acak/Simulasi Terbaru
+    function toast(message) {
+        let el = document.getElementById('umiCatalogToast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'umiCatalogToast';
+            el.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:9999;background:#002D72;color:#fff;padding:12px 16px;border-radius:10px;font:600 14px Inter,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.15)';
+            document.body.appendChild(el);
         }
-        return 0; // Default (Unggulan)
-      });
-
-      // Render ulang urutan elemen di DOM
-      cards.forEach(card => katalogGrid.appendChild(card));
-    });
-  }
-
-  // 3. FITUR LIKE / WISHLIST
-  document.addEventListener('click', function (e) {
-    const btnWishlist = e.target.closest('.btn-wishlist');
-    if (btnWishlist) {
-      const icon = btnWishlist.querySelector('i');
-      if (icon) {
-        icon.classList.toggle('fa-regular');
-        icon.classList.toggle('fa-solid');
-        icon.style.color = icon.classList.contains('fa-solid') ? '#e11d48' : '';
-      }
+        el.textContent = message;
+        clearTimeout(window.__catalogToast);
+        window.__catalogToast = setTimeout(() => el.remove(), 2200);
     }
-  });
 
-  // 4. FITUR KLIK PAGINATION
-  if (paginationWrapper) {
-    const pageBtns = paginationWrapper.querySelectorAll('.page-btn');
-    pageBtns.forEach(btn => {
-      btn.addEventListener('click', function () {
-        if (this.disabled || this.classList.contains('page-arrow')) return;
+    function syncWishlistButtons() {
+        const ids = new Set(readWishlist().map(item => item.id));
+        cards.forEach(card => {
+            const btn = card.querySelector('.btn-wishlist');
+            const icon = btn?.querySelector('i');
+            if (!btn || !icon) return;
+            const active = ids.has(getProduct(card).id);
+            btn.classList.toggle('active', active);
+            icon.classList.toggle('fa-solid', active);
+            icon.classList.toggle('fa-regular', !active);
+            btn.setAttribute('aria-label', active ? 'Hapus dari Wishlist' : 'Tambah Wishlist');
+        });
+    }
 
-        pageBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+    function filtered() {
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        return cards.filter(card => {
+            const title = card.querySelector('.product-title')?.textContent.toLowerCase() || '';
+            const subtitle = card.querySelector('.product-subtitle')?.textContent.toLowerCase() || '';
+            return (category === 'all' || card.dataset.category === category) && (title.includes(query) || subtitle.includes(query));
+        });
+    }
 
-        document.querySelector('.katalog-main-section')?.scrollIntoView({ behavior: 'smooth' });
-      });
+    function sortCards() {
+        const value = sortSelect?.value || 'featured';
+        cards.sort((a, b) => {
+            if (value === 'lowest') return getPrice(a) - getPrice(b);
+            if (value === 'highest') return getPrice(b) - getPrice(a);
+            return Number(a.dataset.newest || cards.indexOf(a)) - Number(b.dataset.newest || cards.indexOf(b));
+        });
+        cards.forEach(card => grid.appendChild(card));
+    }
+
+    function render() {
+        const list = filtered();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        page = Math.min(page, totalPages);
+        const start = (page - 1) * pageSize;
+
+        cards.forEach(card => card.style.display = 'none');
+        list.slice(start, start + pageSize).forEach(card => card.style.display = 'block');
+
+        if (pagination) {
+            pagination.style.display = list.length > pageSize ? 'flex' : 'none';
+            pagination.querySelectorAll('.page-btn').forEach(btn => {
+                const number = Number(btn.textContent.trim());
+                if (!Number.isNaN(number)) {
+                    btn.classList.toggle('active', number === page);
+                    btn.disabled = number > totalPages;
+                }
+            });
+        }
+
+        let empty = document.getElementById('katalogEmptyState');
+        if (!empty) {
+            empty = document.createElement('div');
+            empty.id = 'katalogEmptyState';
+            empty.style.cssText = 'grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b';
+            empty.innerHTML = '<i class="fa-solid fa-box-open" style="font-size:34px;margin-bottom:12px"></i><h3 style="margin-bottom:6px;color:#002D72">Produk tidak ditemukan</h3><p>Coba ubah kata kunci atau kategori pencarian.</p>';
+            grid.appendChild(empty);
+        }
+        empty.style.display = list.length ? 'none' : 'block';
+        syncWishlistButtons();
+    }
+
+    pills.forEach(pill => pill.addEventListener('click', () => {
+        pills.forEach(item => item.classList.remove('active'));
+        pill.classList.add('active');
+        category = pill.dataset.category || 'all';
+        page = 1;
+        render();
+    }));
+
+    searchInput?.addEventListener('input', () => { page = 1; render(); });
+    sortSelect?.addEventListener('change', () => { sortCards(); page = 1; render(); });
+
+    grid.addEventListener('click', event => {
+        const btn = event.target.closest('.btn-wishlist');
+        if (!btn) return;
+        const card = btn.closest('.product-card');
+        const product = getProduct(card);
+        let list = readWishlist();
+        const exists = list.some(item => item.id === product.id);
+        list = exists ? list.filter(item => item.id !== product.id) : [...list, product];
+        writeWishlist(list);
+        syncWishlistButtons();
+        toast(exists ? 'Produk dihapus dari wishlist.' : 'Produk ditambahkan ke wishlist.');
     });
-  }
 
-  // Jalankan pengecekan pertama saat halaman dimuat
-  updateProductView();
+    pagination?.addEventListener('click', event => {
+        const btn = event.target.closest('.page-btn');
+        if (!btn || btn.disabled) return;
+        if (btn.classList.contains('page-arrow')) {
+            page += btn.textContent.includes('›') ? 1 : -1;
+        } else {
+            const number = Number(btn.textContent.trim());
+            if (number) page = number;
+        }
+        page = Math.max(1, page);
+        render();
+        document.querySelector('.katalog-main-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    cards.forEach((card, index) => { if (!card.dataset.newest) card.dataset.newest = index; });
+    sortCards();
+    render();
 });

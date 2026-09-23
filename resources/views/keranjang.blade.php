@@ -30,14 +30,13 @@
       <div class="cart-items-section">
         <div class="cart-header-row">
           <h1 class="page-main-title">Keranjang Belanja Saya</h1>
-          <span class="item-count-badge-text">(3 Item)</span>
         </div>
 
         <!-- Bar Pilih Semua -->
 <div class="select-all-box">
   <div class="checkbox-wrapper">
     <input type="checkbox" id="selectAll" checked>
-    <label for="selectAll">Pilih Semua (<span id="selectAllCount">3</span> Item)</label>
+    <label for="selectAll">Pilih Semua (<span id="selectAllCount"></span> Item)</label>
   </div>
   <button type="button" class="btn-delete-selected"><i class="fa-regular fa-trash-can"></i> Hapus Terpilih</button>
 </div>
@@ -130,7 +129,7 @@
           </div>
 
           <div class="price-row">
-            <span>Subtotal Produk (2 item terpilih)</span>
+            <span>Subtotal Produk</span>
             <span style="font-weight: 600; color: var(--text-main);">Rp 547.000</span>
           </div>
           <div class="price-row">
@@ -167,59 +166,6 @@
     </div>
   </main>
 
-  <!-- ================= POP-UP METODE PENGIRIMAN ================= -->
-  <div class="modal-overlay" id="shippingModal">
-    <div class="modal-card">
-      <h3 class="modal-title">Pilih Metode Pengiriman</h3>
-      
-      <div class="modal-options-stack">
-        <!-- Opsi 1: Dikirim ke Alamat -->
-        <label class="modal-option-card selected" id="modalOptDiantar">
-          <div class="modal-opt-left">
-            <input type="radio" name="shipping_method" value="diantar" checked>
-            <div>
-              <div class="modal-opt-header-row">
-                <span class="modal-opt-title"><i class="fa-solid fa-truck"></i> Dikirim ke Alamat</span>
-                <span class="badge-rek">Rekomendasi</span>
-              </div>
-              <p class="modal-opt-desc">Estimasi tiba dalam 2-4 hari kerja menggunakan jaringan ekspedisi terpercaya (JNE, SiCepat, atau J&T Express).</p>
-              <div class="modal-opt-footer-info">
-                <span><i class="fa-solid fa-tag"></i> Tarif mulai <strong>Rp 15.000</strong></span>
-                <span><i class="fa-solid fa-location-dot"></i> Seluruh Indonesia</span>
-              </div>
-            </div>
-          </div>
-        </label>
-
-        <!-- Opsi 2: Ambil di Toko -->
-        <label class="modal-option-card" id="modalOptAmbil">
-          <div class="modal-opt-left">
-            <input type="radio" name="shipping_method" value="ambil">
-            <div>
-              <div class="modal-opt-header-row">
-                <span class="modal-opt-title"><i class="fa-solid fa-store"></i> Ambil di Toko</span>
-                <span class="badge-free">Bebas Ongkir</span>
-              </div>
-              <p class="modal-opt-desc">Ambil langsung di butik Umi Store tanpa biaya pengiriman tambahan. Siap diambil dalam 2 jam operasional toko setelah order terverifikasi.</p>
-              <div class="modal-opt-footer-info">
-                <span><i class="fa-regular fa-clock"></i> Siap dalam 2 Jam</span>
-                <span><i class="fa-solid fa-shield"></i> Biaya Rp 0 (Gratis)</span>
-              </div>
-            </div>
-          </div>
-        </label>
-      </div>
-
-      <div class="modal-bottom-actions">
-        <button type="button" class="modal-btn-back" id="btnCloseModal">
-          <i class="fa-solid fa-arrow-left"></i> Kembali ke Keranjang
-        </button>
-        <button type="button" class="modal-btn-submit" id="btnSubmitShipping">
-          Lanjutkan <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- ================= MODAL KONFIRMASI HAPUS ================= -->
 <div class="modal-overlay" id="deleteConfirmModal">
@@ -248,7 +194,7 @@
   <script>
     // Menyediakan route Laravel secara aman ke JS
     window.routeDiantar = "{{ route('diantar') }}";
-    window.routePembayaran = "{{ route('pembayaran') }}";
+    window.routePembayaran = "{{ route('diantar') }}";
   </script>
   <script src="{{ asset('js/keranjang.js') }}"></script>
 </body>

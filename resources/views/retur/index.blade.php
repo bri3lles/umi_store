@@ -40,7 +40,7 @@
 
                 <div class="return-deadline">
                     <i class="fa-regular fa-clock"></i>
-                    Sisa Waktu Retur: <strong>1 Hari Lagi</strong>
+                    Batas pengajuan maksimal 3 hari setelah pesanan diterima
                 </div>
             </div>
         </div>
@@ -152,8 +152,8 @@
                     <div class="return-card-title">
                         <div class="step-number">4</div>
                         <div>
-                            <h2>Rekening Pengembalian Dana</h2>
-                            <p>Dana refund akan dikirim ke rekening ini.</p>
+                            <h2>Informasi Pengembalian Dana</h2>
+                            <p>Informasi ini digunakan jika proses refund membutuhkan rekening tujuan.</p>
                         </div>
                     </div>
 
@@ -186,7 +186,7 @@
                     </div>
 
                     <div class="shipping-method">
-                        <label>Metode Pengiriman Paket Retur</label>
+                        <label>Metode Pengiriman Barang Retur</label>
 
                         <div class="shipping-options">
                             <label class="shipping-option active">
@@ -236,7 +236,7 @@
 
                         <div>
                             <span>Metode Refund</span>
-                            <strong>Transfer Bank</strong>
+                            <strong>Diproses setelah verifikasi</strong>
                         </div>
                     </div>
 

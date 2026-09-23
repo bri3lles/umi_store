@@ -1,316 +1,332 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // DATA WILAYAH BERJENJANG INDONESIA
-  const wilayahIndonesia = {
-    "Jawa Timur": {
-      "Kota Surabaya": ["Mulyorejo", "Surabaya Pusat", "Gubeng", "Rungkut", "Darmo"],
-      "Kab. Sidoarjo": ["Sidoarjo Kota", "Waru", "Buduran", "Candi"],
-      "Kota Malang": ["Klojen", "Blimbing", "Lowokwaru"]
-    },
-    "DKI Jakarta": {
-      "Kota Jakarta Selatan": ["Kebayoran Baru", "Mampang Prapatan", "Cilandak", "Setiabudi"],
-      "Kota Jakarta Pusat": ["Menteng", "Tanah Abang", "Gambir"],
-      "Kota Jakarta Barat": ["Kebon Jeruk", "Palmerah", "Cengkareng"]
-    },
-    "Jawa Barat": {
-      "Kota Bandung": ["Coblong", "Dago", "Cicendo", "Antapani"],
-      "Kab. Bekasi": ["Cikarang Utara", "Cikarang Pusat", "Tambun Selatan"],
-      "Kota Bogor": ["Bogor Selatan", "Bogor Timur", "Tanah Sareal"]
-    },
-    "Sumatera Selatan": {
-      "Kota Palembang": ["Ilir Barat I", "Ilir Timur II", "Kertapati", "Plaju"],
-      "Kab. Banyuasin": ["Banyuasin III", "Talang Kelapa"],
-      "Kab. Ogan Ilir": ["Indralaya", "Muara Kuang"]
+(function () {
+    'use strict';
+
+    const CART_KEY = 'umiCart';
+    const ADDRESS_KEY = 'umiAddress';
+    const ORDER_KEY = 'umiOrders';
+    const CHECKOUT_KEY = 'umiCheckout';
+
+    const fallbackAddress = {
+        name: 'Dimas Satria',
+        phone: '+62 812-3456-7890',
+        address: 'Jl. Dharmahusada Indah Timur No. 42, Mulyorejo, Kota Surabaya, Jawa Timur 60115',
+        note: 'Titipkan di pos satpam bila rumah kosong'
+    };
+
+    let cart = [];
+    let address = loadAddress();
+    let shippingType = 'delivery';
+    let shippingCost = 18000;
+
+    const money = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>'"]/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
+        }[char]));
     }
-  };
 
-  let daftarAlamat = [
-    {
-      id: 1,
-      name: "Dimas Satria",
-      phone: "+62 812-3456-7890",
-      address: "Jl. Dharmahusada Indah Timur No. 42, Mulyorejo, Kota Surabaya, Jawa Timur 60115",
-      note: "Titipkan di pos satpam bila rumah kosong",
-      isPrimary: true
-    },
-    {
-      id: 2,
-      name: "Dimas Satria (Kantor)",
-      phone: "+62 812-9876-5432",
-      address: "Gedung Cyber Lt. 3, Jl. Kuningan Barat II, Mampang Prapatan, Jakarta Selatan, DKI Jakarta 12710",
-      note: "Serahkan ke resepsionis lobi utama",
-      isPrimary: false
-    }
-  ];
-
-  let activeAddressIndex = 0;
-
-  const selectProvinsi = document.getElementById('selectNewProvinsi');
-  const selectKota = document.getElementById('selectNewKota');
-  const selectKecamatan = document.getElementById('selectNewKecamatan');
-  const inputPostal = document.getElementById('inputNewPostal');
-
-  // Inisialisasi Pilihan Provinsi
-  function initProvinsi() {
-    if (!selectProvinsi) return;
-    selectProvinsi.innerHTML = '<option value="">Pilih Provinsi</option>';
-    for (let prov in wilayahIndonesia) {
-      let opt = document.createElement('option');
-      opt.value = prov;
-      opt.textContent = prov;
-      selectProvinsi.appendChild(opt);
-    }
-  }
-  initProvinsi();
-
-  // Event saat Provinsi dipilih
-  if (selectProvinsi) {
-    selectProvinsi.addEventListener('change', function() {
-      const selectedProv = this.value;
-      selectKota.innerHTML = '<option value="">Pilih Kota / Kabupaten</option>';
-      selectKecamatan.innerHTML = '<option value="">Pilih Kota/Kabupaten Dahulu</option>';
-      selectKecamatan.disabled = true;
-      inputPostal.value = '';
-
-      if (selectedProv && wilayahIndonesia[selectedProv]) {
-        selectKota.disabled = false;
-        for (let kota in wilayahIndonesia[selectedProv]) {
-          let opt = document.createElement('option');
-          opt.value = kota;
-          opt.textContent = kota;
-          selectKota.appendChild(opt);
+    function loadAddress() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(ADDRESS_KEY));
+            return saved && saved.name && saved.address ? saved : fallbackAddress;
+        } catch {
+            return fallbackAddress;
         }
-      } else {
-        selectKota.disabled = true;
-      }
-    });
-  }
+    }
 
-  // Event saat Kota/Kabupaten dipilih
-  if (selectKota) {
-    selectKota.addEventListener('change', function() {
-      const selectedProv = selectProvinsi.value;
-      const selectedKota = this.value;
-      selectKecamatan.innerHTML = '<option value="">Pilih Kecamatan</option>';
+    function saveAddress() {
+        localStorage.setItem(ADDRESS_KEY, JSON.stringify(address));
+    }
 
-      if (selectedKota && wilayahIndonesia[selectedProv][selectedKota]) {
-        selectKecamatan.disabled = false;
-        wilayahIndonesia[selectedProv][selectedKota].forEach(kec => {
-          let opt = document.createElement('option');
-          opt.value = kec;
-          opt.textContent = kec;
-          selectKecamatan.appendChild(opt);
+    function loadCart() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(CART_KEY));
+            return Array.isArray(saved) ? saved : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function normalizeCart(items) {
+        return items.map(item => ({
+            id: item.id || item.productId || 'product-' + Math.random().toString(36).slice(2),
+            name: item.name || item.product_name || 'Produk Umi Store',
+            price: Number(item.price || item.harga || 0),
+            qty: Math.max(1, Number(item.qty || item.quantity || 1)),
+            size: item.size || item.ukuran || '-',
+            color: item.color || item.warna || '-',
+            image: item.image || item.img || item.image_url || '',
+            stock: Number(item.stock || 999)
+        }));
+    }
+
+    function getCart() {
+        cart = normalizeCart(loadCart());
+        return cart;
+    }
+
+    function subtotal() {
+        return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
+    }
+
+    function renderAddress() {
+        const recipient = document.getElementById('displayRecipient');
+        const addressText = document.getElementById('displayAddressText');
+        const noteBox = document.getElementById('displayNoteBox');
+        const noteText = document.getElementById('displayNoteText');
+
+        if (recipient) recipient.textContent = `${address.name} (${address.phone})`;
+        if (addressText) addressText.textContent = address.address;
+        if (noteBox) noteBox.style.display = address.note ? 'flex' : 'none';
+        if (noteText) noteText.textContent = address.note ? `Catatan Pengiriman: "${address.note}"` : '';
+    }
+
+    function renderItems() {
+        const container = document.getElementById('summaryItemsContainer');
+        const empty = document.getElementById('summaryEmptyState');
+        const badge = document.getElementById('summaryItemCountBadge');
+        if (!container) return;
+
+        const items = getCart();
+        const count = items.reduce((sum, item) => sum + item.qty, 0);
+
+        if (badge) badge.textContent = `${count} Produk`;
+        if (empty) empty.style.display = items.length ? 'none' : 'block';
+
+        container.querySelectorAll('.summary-item-card').forEach(el => el.remove());
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'summary-item-card';
+            card.innerHTML = `
+                <img src="${escapeHtml(item.image || '/images/placeholder-product.png')}" alt="${escapeHtml(item.name)}" class="summary-item-img" onerror="this.style.visibility='hidden'">
+                <div class="summary-item-details" style="flex:1;">
+                    <h4>${escapeHtml(item.name)}</h4>
+                    <p>${escapeHtml(item.color)} • Size ${escapeHtml(item.size)} • ${item.qty}x</p>
+                    <div class="summary-item-price">${money(item.price * item.qty)}</div>
+                </div>
+            `;
+            container.insertBefore(card, empty || null);
+        });
+    }
+
+    function renderTotals() {
+        const sub = subtotal();
+        const discount = 0;
+        const total = Math.max(0, sub - discount + shippingCost);
+
+        const subtotalEl = document.getElementById('subtotalDisplay');
+        const discountRow = document.getElementById('discountRow');
+        const discountEl = document.getElementById('discountDisplay');
+        const shippingEl = document.getElementById('shippingFeeDisplay');
+        const grandEl = document.getElementById('grandTotalDisplay');
+
+        if (subtotalEl) subtotalEl.textContent = money(sub);
+        if (discountRow) discountRow.style.display = discount ? 'flex' : 'none';
+        if (discountEl) discountEl.textContent = '-' + money(discount);
+        if (shippingEl) shippingEl.textContent = shippingCost ? money(shippingCost) : 'GRATIS';
+        if (grandEl) grandEl.textContent = money(total);
+
+        return { subtotal: sub, discount, shipping: shippingCost, total };
+    }
+
+    window.selectShipping = function (card, cost, type) {
+        document.querySelectorAll('.shipping-option-card').forEach(item => {
+            item.classList.remove('selected');
+            const radio = item.querySelector('input[type="radio"]');
+            if (radio) radio.checked = false;
         });
 
-        // Set kode pos otomatis
-        if (selectedKota.includes('Surabaya')) inputPostal.value = '60115';
-        else if (selectedKota.includes('Jakarta Selatan')) inputPostal.value = '12190';
-        else if (selectedKota.includes('Bandung')) inputPostal.value = '40111';
-        else if (selectedKota.includes('Palembang')) inputPostal.value = '30139';
-        else inputPostal.value = '12000';
-      } else {
-        selectKecamatan.disabled = true;
-        inputPostal.value = '';
-      }
-    });
-  }
+        card.classList.add('selected');
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
 
-  function renderActiveAddress() {
-    const active = daftarAlamat[activeAddressIndex];
-    if (!active) return;
-    document.getElementById('displayRecipient').textContent = `${active.name} (${active.phone})`;
-    document.getElementById('displayAddressText').textContent = active.address;
-    
-    const badge = document.getElementById('displayBadge');
-    if (active.isPrimary) {
-      badge.style.display = 'inline-block';
-      badge.textContent = 'Alamat Utama';
-    } else {
-      badge.style.display = 'none';
+        shippingType = type || card.dataset.shippingType || 'delivery';
+        shippingCost = Number(cost || 0);
+
+        const pickupInfo = document.getElementById('storePickupInfo');
+        if (pickupInfo) pickupInfo.style.display = shippingType === 'pickup' ? 'block' : 'none';
+
+        renderTotals();
+    };
+
+    function openAddressModal() {
+        const modal = document.getElementById('modalUbahAlamat');
+        if (!modal) return;
+        document.getElementById('editName').value = address.name;
+        document.getElementById('editPhone').value = address.phone;
+        document.getElementById('editStreet').value = address.address;
+        document.getElementById('editNote').value = address.note || '';
+        modal.style.display = 'flex';
     }
 
-    const noteBox = document.getElementById('displayNoteBox');
-    if (active.note && active.note.trim() !== '') {
-      noteBox.style.display = 'flex';
-      document.getElementById('displayNoteText').textContent = `Catatan Pengirim: "${active.note}"`;
-    } else {
-      noteBox.style.display = 'none';
+    function closeAddressModal() {
+        const modal = document.getElementById('modalUbahAlamat');
+        if (modal) modal.style.display = 'none';
     }
-  }
 
-  // Accordion Tambah Alamat
-  const toggleAddAddress = document.getElementById('toggleAddAddress');
-  const formAddAddress = document.getElementById('formAddAddress');
-  const chevronIcon = document.getElementById('chevronIcon');
+    function saveEditedAddress() {
+        const name = document.getElementById('editName')?.value.trim();
+        const phone = document.getElementById('editPhone')?.value.trim();
+        const street = document.getElementById('editStreet')?.value.trim();
+        const note = document.getElementById('editNote')?.value.trim() || '';
 
-  if (toggleAddAddress) {
-    toggleAddAddress.addEventListener('click', () => {
-      if (formAddAddress.style.display === 'block') {
-        formAddAddress.style.display = 'none';
-        chevronIcon.className = 'fa-solid fa-chevron-down';
-      } else {
-        formAddAddress.style.display = 'block';
-        chevronIcon.className = 'fa-solid fa-chevron-up';
-      }
+        if (!name || !phone || !street) {
+            showToast('Nama, nomor handphone, dan alamat wajib diisi.', 'error');
+            return;
+        }
+
+        address = { name, phone, address: street, note };
+        saveAddress();
+        renderAddress();
+        closeAddressModal();
+        showToast('Alamat pengiriman diperbarui.');
+    }
+
+    function showToast(message, type = 'success') {
+        let toast = document.getElementById('umiCheckoutToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'umiCheckoutToast';
+            toast.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:9999;padding:13px 17px;border-radius:10px;background:#002D72;color:#fff;font:600 14px Inter,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.15);transition:.2s;';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.background = type === 'error' ? '#b42318' : '#002D72';
+        clearTimeout(window.__umiToastTimer);
+        window.__umiToastTimer = setTimeout(() => toast.remove(), 2800);
+    }
+
+    function saveCheckoutSnapshot() {
+        const totals = renderTotals();
+        const snapshot = {
+            items: getCart(),
+            address,
+            shippingType,
+            shippingCost,
+            totals,
+            pickupTime: document.getElementById('pickupTime')?.value || null,
+            createdAt: new Date().toISOString()
+        };
+        localStorage.setItem(CHECKOUT_KEY, JSON.stringify(snapshot));
+        return snapshot;
+    }
+
+    async function startPayment() {
+        if (!getCart().length) {
+            showToast('Keranjang masih kosong.', 'error');
+            return;
+        }
+
+        if (shippingType === 'delivery' && (!address.name || !address.phone || !address.address)) {
+            showToast('Lengkapi alamat pengiriman terlebih dahulu.', 'error');
+            return;
+        }
+
+        const snapshot = saveCheckoutSnapshot();
+        const button = document.getElementById('btnLanjutBayar');
+        if (button) {
+            button.disabled = true;
+            button.dataset.originalText = button.innerHTML;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan pembayaran...';
+        }
+
+        try {
+            const response = await fetch(window.umiCheckoutConfig.routes.paymentToken, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': window.umiCheckoutConfig.csrfToken
+                },
+                body: JSON.stringify({
+                    gross_amount: snapshot.totals.total,
+                    items: snapshot.items,
+                    shipping_type: snapshot.shippingType
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.snap_token) {
+                throw new Error(data.message || 'Token pembayaran tidak tersedia.');
+            }
+
+            if (!window.snap) throw new Error('Midtrans Snap belum termuat.');
+
+            window.snap.pay(data.snap_token, {
+                onSuccess: function (result) {
+                    finalizeOrder('success', result);
+                },
+                onPending: function (result) {
+                    finalizeOrder('pending', result);
+                },
+                onError: function (result) {
+                    showToast('Pembayaran gagal. Silakan coba lagi.', 'error');
+                },
+                onClose: function () {
+                    showToast('Pembayaran belum diselesaikan.');
+                }
+            });
+        } catch (error) {
+            console.error(error);
+            showToast(error.message || 'Gagal menyiapkan pembayaran.', 'error');
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || 'Lanjutkan ke Pembayaran';
+            }
+        }
+    }
+
+    function finalizeOrder(status, paymentResult) {
+        const snapshot = JSON.parse(localStorage.getItem(CHECKOUT_KEY) || '{}');
+        const orderId = paymentResult?.order_id || ('UMI-' + Date.now());
+        const orders = JSON.parse(localStorage.getItem(ORDER_KEY) || '[]');
+
+        orders.unshift({
+            id: orderId,
+            status: status === 'success' ? 'Dibayar' : 'Menunggu Pembayaran',
+            paymentStatus: status,
+            createdAt: new Date().toISOString(),
+            receivedAt: null,
+            items: snapshot.items || [],
+            address: snapshot.address || address,
+            shippingType: snapshot.shippingType || shippingType,
+            shippingCost: snapshot.shippingCost || shippingCost,
+            subtotal: snapshot.totals?.subtotal || 0,
+            total: snapshot.totals?.total || 0,
+            returnStatus: null
+        });
+
+        localStorage.setItem(ORDER_KEY, JSON.stringify(orders));
+
+        if (status === 'success') {
+            localStorage.removeItem(CART_KEY);
+            localStorage.removeItem(CHECKOUT_KEY);
+            window.location.href = window.umiCheckoutConfig.routes.profile + '#pesanan';
+        } else {
+            window.location.href = window.umiCheckoutConfig.routes.profile + '#pesanan';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        getCart();
+        renderAddress();
+        renderItems();
+        renderTotals();
+
+        document.getElementById('btnOpenUbahAlamat')?.addEventListener('click', openAddressModal);
+        document.getElementById('closeUbahModal')?.addEventListener('click', closeAddressModal);
+        document.getElementById('btnSaveEditAddress')?.addEventListener('click', saveEditedAddress);
+        document.getElementById('btnLanjutBayar')?.addEventListener('click', startPayment);
+
+        document.getElementById('modalUbahAlamat')?.addEventListener('click', function (event) {
+            if (event.target === this) closeAddressModal();
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeAddressModal();
+        });
     });
-  }
-
-  // Simpan Alamat Baru
-  const btnSaveNewAddress = document.getElementById('btnSaveNewAddress');
-  if (btnSaveNewAddress) {
-    btnSaveNewAddress.addEventListener('click', () => {
-      const name = document.getElementById('inputNewName').value;
-      const phone = document.getElementById('inputNewPhone').value;
-      const prov = selectProvinsi.value;
-      const kota = selectKota.value;
-      const kec = selectKecamatan.value;
-      const postal = inputPostal.value;
-      const street = document.getElementById('inputNewStreet').value;
-      const note = document.getElementById('inputNewNote').value;
-      const isPrimary = document.getElementById('checkNewPrimary').checked;
-
-      const finalName = name.trim() !== '' ? name : 'Penerima Baru';
-      const finalPhone = phone.trim() !== '' ? phone : '+62 812-0000-0000';
-      const finalStreet = street.trim() !== '' ? street : 'Alamat lengkap';
-
-      const fullAddressString = `${finalStreet}, Kec. ${kec || 'Kecamatan'}, ${kota || 'Kota/Kab'}, ${prov || 'Provinsi'} ${postal || ''}`;
-
-      if (isPrimary) {
-        daftarAlamat.forEach(item => item.isPrimary = false);
-      }
-
-      const newObj = {
-        id: daftarAlamat.length + 1,
-        name: finalName,
-        phone: finalPhone,
-        address: fullAddressString,
-        note: note,
-        isPrimary: isPrimary
-      };
-
-      if (isPrimary) {
-        daftarAlamat.unshift(newObj); 
-        activeAddressIndex = 0;
-      } else {
-        daftarAlamat.push(newObj);
-        activeAddressIndex = daftarAlamat.length - 1;
-      }
-
-      renderActiveAddress();
-      
-      // Reset form
-      document.getElementById('inputNewName').value = '';
-      document.getElementById('inputNewPhone').value = '';
-      selectProvinsi.value = '';
-      selectKota.innerHTML = '<option value="">Pilih Provinsi Dahulu</option>';
-      selectKota.disabled = true;
-      selectKecamatan.innerHTML = '<option value="">Pilih Kota/Kabupaten Dahulu</option>';
-      selectKecamatan.disabled = true;
-      inputPostal.value = '';
-      document.getElementById('inputNewStreet').value = '';
-      document.getElementById('inputNewNote').value = '';
-
-      formAddAddress.style.display = 'none';
-      chevronIcon.className = 'fa-solid fa-chevron-down';
-    });
-  }
-
-  // Modal Ubah Alamat
-  const modalUbahAlamat = document.getElementById('modalUbahAlamat');
-  const btnOpenUbahAlamat = document.getElementById('btnOpenUbahAlamat');
-  if (btnOpenUbahAlamat) {
-    btnOpenUbahAlamat.addEventListener('click', () => {
-      const active = daftarAlamat[activeAddressIndex];
-      document.getElementById('editName').value = active.name;
-      document.getElementById('editPhone').value = active.phone;
-      document.getElementById('editStreet').value = active.address;
-      document.getElementById('editNote').value = active.note;
-      modalUbahAlamat.style.display = 'flex';
-    });
-  }
-
-  const closeUbahModal = document.getElementById('closeUbahModal');
-  if (closeUbahModal) {
-    closeUbahModal.addEventListener('click', () => {
-      modalUbahAlamat.style.display = 'none';
-    });
-  }
-
-  const btnSaveEditAddress = document.getElementById('btnSaveEditAddress');
-  if (btnSaveEditAddress) {
-    btnSaveEditAddress.addEventListener('click', () => {
-      daftarAlamat[activeAddressIndex].name = document.getElementById('editName').value;
-      daftarAlamat[activeAddressIndex].phone = document.getElementById('editPhone').value;
-      daftarAlamat[activeAddressIndex].address = document.getElementById('editStreet').value;
-      daftarAlamat[activeAddressIndex].note = document.getElementById('editNote').value;
-      
-      renderActiveAddress();
-      modalUbahAlamat.style.display = 'none';
-    });
-  }
-
-  // Modal Pilih Alamat Lain
-  const modalPilihAlamat = document.getElementById('modalPilihAlamat');
-  const listAlamatContainer = document.getElementById('listAlamatContainer');
-  const btnOpenPilihAlamat = document.getElementById('btnOpenPilihAlamat');
-
-  if (btnOpenPilihAlamat) {
-    btnOpenPilihAlamat.addEventListener('click', () => {
-      listAlamatContainer.innerHTML = '';
-      daftarAlamat.forEach((item, idx) => {
-        const isActive = (idx === activeAddressIndex);
-        const div = document.createElement('div');
-        div.className = `address-option-item ${isActive ? 'active' : ''}`;
-        div.innerHTML = `
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-            <strong>${item.name} (${item.phone})</strong>
-            ${item.isPrimary ? '<span class="badge-utama">Utama</span>' : ''}
-          </div>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">${item.address}</p>
-          <button type="button" class="btn-save-address" style="padding:6px 14px; font-size:12px;" onclick="switchActiveAddress(${idx})">
-            ${isActive ? 'Alamat Aktif Saat Ini' : 'Gunakan Alamat Ini'}
-          </button>
-        `;
-        listAlamatContainer.appendChild(div);
-      });
-      modalPilihAlamat.style.display = 'flex';
-    });
-  }
-
-  const closePilihModal = document.getElementById('closePilihModal');
-  if (closePilihModal) {
-    closePilihModal.addEventListener('click', () => {
-      modalPilihAlamat.style.display = 'none';
-    });
-  }
-
-  window.switchActiveAddress = function(index) {
-    activeAddressIndex = index;
-    renderActiveAddress();
-    modalPilihAlamat.style.display = 'none';
-  };
-
-  window.addEventListener('click', (e) => {
-    if (e.target === modalUbahAlamat) modalUbahAlamat.style.display = 'none';
-    if (e.target === modalPilihAlamat) modalPilihAlamat.style.display = 'none';
-  });
-
-  // Hitung Total Pengiriman
-  window.selectShipping = function(cardElement, cost) {
-    document.querySelectorAll('.shipping-option-card').forEach(card => {
-      card.classList.remove('selected');
-      card.querySelector('input[type="radio"]').checked = false;
-    });
-    cardElement.classList.add('selected');
-    cardElement.querySelector('input[type="radio"]').checked = true;
-
-    document.getElementById('shippingFeeDisplay').textContent = 'Rp ' + cost.toLocaleString('id-ID');
-    
-    let subtotal = 547000;
-    let discount = 50000;
-    let grandTotal = subtotal - discount + cost;
-
-    document.getElementById('grandTotalDisplay').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
-  };
-
-  renderActiveAddress();
-});
+})();

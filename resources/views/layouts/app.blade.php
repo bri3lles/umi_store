@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,5 +29,8 @@
   <!-- Penampung JS Khusus Per Halaman (seperti katalog.js) -->
   @stack('scripts')
 
+  </div>
+
+    @stack('scripts')
 </body>
 </html>

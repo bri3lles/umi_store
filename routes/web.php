@@ -4,9 +4,23 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CartController; // Pastikan controller ini ada jika ingin dipakai
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MidtransController;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 
-require __DIR__.'/admin.php';
+Route::post('/midtrans/snap-token', [MidtransController::class, 'getSnapToken'])
+    ->name('midtrans.snap');
+
+// Saklar bahasa EN/ID. Disimpan ke session lalu dikembalikan ke halaman asal
+// (dibaca oleh App\Http\Middleware\SetLocale di setiap request berikutnya).
+Route::get('/lang/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES, true), 404);
+
+    session(['locale' => $locale]);
+
+    return back();
+})->name('lang.switch');
 
 // 1. Route Beranda
 Route::get('/', function () {
@@ -42,43 +56,67 @@ Route::get('/diantar', function () {
     return view('diantar');
 })->name('diantar');
 
-Route::get('/pembayaran', function () {
-    return view('pembayaran');
-})->name('pembayaran');
-
-Route::get('/bukti-pembayaran', function () {
-    return view('bukti-pembayaran');
-})->name('bukti.pembayaran');
-
-Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.settings');
-
-Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
 // Menampilkan halaman login
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-// Memproses login dummy
 Route::post('/login', function (Request $request) {
-
-    $email = $request->email;
-    $password = $request->password;
-
-    // Data login dummy
-    if ($email === 'coba@gmail.com' && $password === '1') {
-        return redirect()->route('profile.settings');
-    }
-
-    return back()->withErrors([
-        'email' => 'Email atau password salah.',
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
     ]);
 
+    if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
+    }
+
+    $request->session()->regenerate();
+
+    if (Auth::user()->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return redirect()->intended(route('profile.index'));
 })->name('login.submit');
+
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('beranda');
+})->name('logout');
 
 Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
+
+Route::post('/register', function (Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'email' => 'required|string|email|max:255|unique:users,email',
+        'password' => 'required|string|min:6',
+    ]);
+
+    $user = User::create([
+        'name' => $validated['name'],
+        'phone' => $validated['phone'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'role' => 'customer',
+    ]);
+
+    Auth::login($user);
+
+    $request->session()->regenerate();
+
+    return redirect()->route('profile.index');
+})->name('register.submit');
 
 Route::get('/profile', [ProfileController::class, 'index'])
     ->name('profile.index');
@@ -95,3 +133,5 @@ Route::get('/profile/pengaturan', [ProfileController::class, 'pengaturan'])
 Route::get('/retur', function () {
     return view('retur.index');
 })->name('retur.index');
+
+require __DIR__.'/admin.php';

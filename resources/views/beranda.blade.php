@@ -48,7 +48,7 @@
 
         <!-- Kolom Kanan: Display Banner Gambar -->
         <div class="hero-image-wrapper">
-          <img src="https://i.pinimg.com/1200x/97/3e/a5/973ea559ba54081a12c74bd58b4fb8f4.jpg" alt="Hero image" class="hero-image">
+          <img src="{{ asset('images/bghero.jpg') }}" alt="Hero image" class="hero-image">
         </div>
 
       </div>
@@ -56,7 +56,7 @@
   </main>
 
   <!-- Section Kategori Populer -->
-<section class="section category-section">
+<section class="section category-section" id="kategori">
   <div class="container">
     
     <!-- Header & Tombol Navigasi Slider -->
@@ -304,7 +304,7 @@
                 <span>Mulai Belanja Sekarang</span>
               </a>
 
-              <a href="{{ url('/pesanan') }}" class="btn-cta-secondary">
+              <a href="{{ url('profile/pesanan') }}" class="btn-cta-secondary">
                 <span>Cek Pesanan Saya</span>
                 <i class="fa-solid fa-arrow-right"></i>
               </a>

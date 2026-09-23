@@ -19,14 +19,12 @@ body {
     padding: 0;
 }
 
-/* Hero Section Full Width dengan Gradasi Penuh */
+/* Hero Section Full Width - Terang, samakan dengan Katalog */
 .about-hero-full {
     position: relative;
     width: 100%;
-    /* Menggunakan background foto toko dengan overlay gradasi biru penuh */
-    background: linear-gradient(135deg, rgba(0, 45, 114, 0.95) 0%, rgba(0, 25, 61, 0.92) 100%), 
-                url('../images/toko-bg.jpg') center/cover no-repeat;
-    color: white;
+    background: linear-gradient(135deg, #f0f4f9 0%, #e6edf7 100%);
+    color: var(--umi-text);
     padding: 80px 20px;
     text-align: center;
     box-sizing: border-box;
@@ -39,8 +37,8 @@ body {
 
 .hero-badge-pill {
     display: inline-block;
-    background: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
+    background: rgba(0, 45, 114, 0.08);
+    color: var(--umi-primary);
     font-size: 11px;
     font-weight: 700;
     padding: 6px 16px;
@@ -55,11 +53,12 @@ body {
     font-weight: 800;
     margin: 0 0 16px 0;
     line-height: 1.25;
+    color: var(--umi-text);
 }
 
 .about-hero-full p {
     font-size: 15px;
-    color: #cbd5e1;
+    color: var(--umi-muted);
     line-height: 1.6;
     margin: 0 0 28px 0;
 }
@@ -72,8 +71,8 @@ body {
 }
 
 .btn-hero-primary {
-    background: #ffffff;
-    color: var(--umi-primary);
+    background: var(--umi-primary);
+    color: #ffffff;
     text-decoration: none;
     font-weight: 700;
     font-size: 13px;
@@ -87,13 +86,13 @@ body {
 
 .btn-hero-primary:hover {
     transform: translateY(-2px);
-    background: #f1f5f9;
+    background: var(--umi-primary-dark);
 }
 
 .btn-hero-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    color: var(--umi-text);
+    border: 1px solid var(--umi-border);
     text-decoration: none;
     font-weight: 600;
     font-size: 13px;
@@ -106,7 +105,7 @@ body {
 }
 
 .btn-hero-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #f1f5f9;
 }
 
 /* Container Utama */

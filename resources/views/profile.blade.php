@@ -275,7 +275,7 @@
                         <div>
                             <i class="fa-solid fa-building-columns"></i>
                             <span>
-                                Transfer Manual BCA
+                                Menunggu Pembayaran (Midtrans)
                             </span>
                         </div>
 

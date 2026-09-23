@@ -19,7 +19,7 @@
         </p>
 
         <!-- Form Pencarian -->
-        <form action="#" method="GET" class="search-box-wrapper" onsubmit="event.preventDefault();">
+        <form action="{{ route('katalog') }}" method="GET" class="search-box-wrapper">
           <div class="search-input-group">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" id="searchInput" placeholder="Cari baju, celana, dress, outerwear..." autocomplete="off">
